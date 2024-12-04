@@ -1,0 +1,10 @@
+^D:\CODING SPACES\TODO_APP\WINDOWS\CMAKELISTS.TXT
+setlocal
+"D:\Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SD:/Coding Spaces/todo_app/windows" "-BD:/Coding Spaces/todo_app/build/windows/x64" --check-stamp-file "D:/Coding Spaces/todo_app/build/windows/x64/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
