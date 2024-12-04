@@ -1,6 +1,6 @@
-^D:\CODING SPACES\TODO_APP\BUILD\WINDOWS\X64\CMAKEFILES\A7D641381968167002B85E5D21F13964\GENERATE.STAMP.RULE
+^D:\CODING SPACES\TODO-FLUTTER\TODO_APP\BUILD\WINDOWS\X64\CMAKEFILES\FAD565BE447CE11211A63672A08550A7\GENERATE.STAMP.RULE
 setlocal
-"D:\Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SD:/Coding Spaces/todo_app/windows" "-BD:/Coding Spaces/todo_app/build/windows/x64" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/Coding Spaces/todo_app/build/windows/x64/todo_app.sln"
+"D:\Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" "-SD:/Coding Spaces/ToDo-Flutter/todo_app/windows" "-BD:/Coding Spaces/ToDo-Flutter/todo_app/build/windows/x64" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/Coding Spaces/ToDo-Flutter/todo_app/build/windows/x64/todo_app.sln"
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

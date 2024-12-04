@@ -1,25 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\Coding Spaces\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\core_implementations.cc">
+    <ClCompile Include="D:\Coding Spaces\ToDo-Flutter\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\core_implementations.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\Coding Spaces\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\standard_codec.cc">
+    <ClCompile Include="D:\Coding Spaces\ToDo-Flutter\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\standard_codec.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\Coding Spaces\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\plugin_registrar.cc">
+    <ClCompile Include="D:\Coding Spaces\ToDo-Flutter\todo_app\windows\flutter\ephemeral\cpp_client_wrapper\plugin_registrar.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\Coding Spaces\todo_app\windows\flutter\CMakeLists.txt" />
+    <CustomBuild Include="D:\Coding Spaces\ToDo-Flutter\todo_app\windows\flutter\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{1294DAA0-6AB9-3901-92B6-F3F0F152A0A7}</UniqueIdentifier>
+      <UniqueIdentifier>{9F94E3B9-4763-3E79-AC70-A9095EB6A985}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{52AE2DC6-5706-3AE6-A443-42FE688DD6FC}</UniqueIdentifier>
+      <UniqueIdentifier>{FE8997CA-ACCA-3A92-B76F-1E3FA8F6DC9F}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

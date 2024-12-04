@@ -1,4 +1,4 @@
-# Install script for directory: D:/Coding Spaces/todo_app/windows/flutter
+# Install script for directory: D:/Coding Spaces/ToDo-Flutter/todo_app/windows/flutter
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
