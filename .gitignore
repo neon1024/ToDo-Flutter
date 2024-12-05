@@ -1,0 +1,38 @@
+# Flutter/Dart/Pub-related
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+pubspec.lock
+
+# Android-related
+.android/
+build/
+
+# iOS-related (if working with iOS)
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/.last_build_id
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# macOS-related (if working with macOS)
+macos/Pods/
+macos/.symlinks/
+
+# Generated files
+*.log
+*.lock
+*.tmp
+*.swp
+
+# User-specific files
+*.iml
+*.ipr
+*.iws
+.idea/
