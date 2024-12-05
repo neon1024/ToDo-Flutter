@@ -13,10 +13,15 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   final List<Task> tasks = [];
 
-  // Function to add a task
   void addTask(Task task) {
     setState(() {
       tasks.add(task);
+    });
+  }
+
+  void removeTask(Task task) {
+    setState(() {
+      tasks.remove(task);
     });
   }
 
@@ -26,15 +31,19 @@ class _MainPageState extends State<MainPage> {
       home: Scaffold(
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
+
           children: [
             const MainTop(),
             const FilterButtons(),
+
             Expanded(
-              child: ListOfTasks(tasks: tasks), // Passing the tasks to the list
+              child: ListOfTasks(
+                tasks: tasks,
+                removeTask: removeTask, // Pass removeTask to ListOfTasks
+              ),
             ),
-            Expanded(
-              child: AddTaskButton(addTask: addTask), // Passing the addTask method
-            ),
+
+            AddTaskButton(addTask: addTask),
           ],
         ),
       ),
@@ -101,16 +110,12 @@ class _MainTopState extends State<MainTop> {
   }  // build
 }  // _MainTopState
 
-class ListOfTasks extends StatefulWidget {
+class ListOfTasks extends StatelessWidget {
   final List<Task> tasks;
+  final Function(Task) removeTask;
 
-  const ListOfTasks({super.key, required this.tasks});
+  const ListOfTasks({super.key, required this.tasks, required this.removeTask});
 
-  @override
-  State<ListOfTasks> createState() => _ListOfTasksState();
-}
-
-class _ListOfTasksState extends State<ListOfTasks> {
   void _showTaskDetailsDialog(BuildContext context, Task task) {
     showDialog(
       context: context,
@@ -118,56 +123,70 @@ class _ListOfTasksState extends State<ListOfTasks> {
         return Center(
           child: Card(
             elevation: 10,
-
             child: Padding(
               padding: const EdgeInsets.all(16),
-
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-
                 children: [
                   TextField(
-                    controller: TextEditingController(
-                        text: task.title),
+                    controller: TextEditingController(text: task.title),
                     decoration: const InputDecoration(
-                        labelText: 'Title',
-                        border: InputBorder.none),
-                    enabled: false, // Make it non-editable
-
-                  ),
-
-                  TextField(
-                    controller: TextEditingController(
-                        text: task.description),
-                    decoration: const InputDecoration(
-                        labelText: 'Description',
-                        border: InputBorder.none),
-                    enabled: false, // Make it non-editable
-                  ),
-
-                  TextField(
-                    controller: TextEditingController(
-                        text: task.deadline.toString()),
-                    decoration: const InputDecoration(
-                        labelText: 'Deadline',
-                        border: InputBorder.none),
-                    enabled: false, // Make it non-editable
-                  ),
-
-                  TextField(
-                    controller: TextEditingController(
-                        text: task.status),
-                    decoration: const InputDecoration(
-                      labelText: "Status",
-                      border: InputBorder.none),
+                      labelText: 'Title',
+                      border: InputBorder.none,
+                    ),
                     enabled: false,
                   ),
-
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Close dialog
-                    },
-                    child: const Text('Close'),
+                  TextField(
+                    controller: TextEditingController(text: task.description),
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: InputBorder.none,
+                    ),
+                    enabled: false,
+                  ),
+                  TextField(
+                    controller: TextEditingController(text: task.deadline.toString()),
+                    decoration: const InputDecoration(
+                      labelText: 'Deadline',
+                      border: InputBorder.none,
+                    ),
+                    enabled: false,
+                  ),
+                  TextField(
+                    controller: TextEditingController(text: task.status),
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      border: InputBorder.none,
+                    ),
+                    enabled: false,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                          child: const Row(
+                              children: [
+                                Icon(Icons.close),
+                                Text('Close'),
+                              ]
+                          )
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          removeTask(task); // Remove the task
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.delete),
+                            Text('Remove'),
+                          ]
+                        )
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -181,9 +200,9 @@ class _ListOfTasksState extends State<ListOfTasks> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: widget.tasks.length, // Access the tasks via the widget property
+      itemCount: tasks.length,
       itemBuilder: (context, index) {
-        Task task = widget.tasks[index];
+        Task task = tasks[index];
         return ListTile(
           title: Text(task.title),
           subtitle: Text(task.description),
