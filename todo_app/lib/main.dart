@@ -19,9 +19,16 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  void removeTask(Task task) {
+  void removeTaskById(String idToRemove) {
     setState(() {
-      tasks.remove(task);
+      tasks.removeWhere((task) { return task.uid == idToRemove;});
+    });
+  }
+
+  void updateTask(String updateId, Task newTask) {
+    setState(() {
+      int index = tasks.indexWhere((task) { return task.uid == updateId; });
+      tasks[index] = newTask;
     });
   }
 
@@ -29,22 +36,37 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-
+        backgroundColor: const Color(0xFF0F0F0F),
+        body: Stack(
           children: [
-            const MainTop(),
-            const FilterButtons(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
 
-            Expanded(
-              child: ListOfTasks(
-                tasks: tasks,
-                removeTask: removeTask, // Pass removeTask to ListOfTasks
+              children: [
+                const MainTop(),
+                const FilterButtons(),
+
+                Expanded(
+                  child: ListOfTasks(
+                    tasks: tasks,
+                    removeTaskById: removeTaskById,
+                    updateTask: updateTask
+                  ),
+                ),
+              ],
+            ),
+
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).size.height * 0.15,
+              child: Align(
+                alignment: Alignment.center,
+                child: AddTaskButton(addTask: addTask),
               ),
             ),
 
-            AddTaskButton(addTask: addTask),
-          ],
+          ]  // body: children
         ),
       ),
     );
@@ -70,7 +92,7 @@ class _MainTopState extends State<MainTop> {
 
         child: Container(
           padding: const EdgeInsets.all(16),
-          color: Colors.black, // Background color of the container
+          color: const Color(0xFF0F0F0F), // Background color of the container
 
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,11 +134,25 @@ class _MainTopState extends State<MainTop> {
 
 class ListOfTasks extends StatelessWidget {
   final List<Task> tasks;
-  final Function(Task) removeTask;
+  final Function(String) removeTaskById;
+  final Function(String, Task) updateTask;
 
-  const ListOfTasks({super.key, required this.tasks, required this.removeTask});
+  const ListOfTasks({
+    super.key,
+    required this.tasks,
+    required this.removeTaskById,
+    required this.updateTask,
+  });
 
   void _showTaskDetailsDialog(BuildContext context, Task task) {
+    // Controllers for task fields
+    TextEditingController titleController = TextEditingController(text: task.title);
+    TextEditingController descriptionController = TextEditingController(text: task.description);
+    TextEditingController deadlineController = TextEditingController(text: task.deadline.toString().split(' ')[0]);
+    String selectedStatus = task.status; // Track selected status
+
+    bool isEditing = false;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -125,70 +161,125 @@ class ListOfTasks extends StatelessWidget {
             elevation: 10,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: TextEditingController(text: task.title),
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                  ),
-                  TextField(
-                    controller: TextEditingController(text: task.description),
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                  ),
-                  TextField(
-                    controller: TextEditingController(text: task.deadline.toString()),
-                    decoration: const InputDecoration(
-                      labelText: 'Deadline',
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                  ),
-                  TextField(
-                    controller: TextEditingController(text: task.status),
-                    decoration: const InputDecoration(
-                      labelText: 'Status',
-                      border: InputBorder.none,
-                    ),
-                    enabled: false,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                          child: const Row(
-                              children: [
-                                Icon(Icons.close),
-                                Text('Close'),
-                              ]
-                          )
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(labelText: 'Title', border: InputBorder.none),
+                        enabled: isEditing, // Editable only in edit mode
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          removeTask(task); // Remove the task
-                        },
-                        child: const Row(
-                          children: [
-                            Icon(Icons.delete),
-                            Text('Remove'),
-                          ]
-                        )
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(labelText: 'Description', border: InputBorder.none),
+                        enabled: isEditing,
+                      ),
+                      TextField(
+                        controller: deadlineController,
+                        decoration: const InputDecoration(labelText: 'Deadline (YYYY-MM-DD)', border: InputBorder.none),
+                        enabled: isEditing,
+                      ),
+                      // Use DropdownButtonFormField instead of DropdownButton
+                      DropdownButtonFormField<String>(
+                        value: selectedStatus,
+                        items: <String>['To Do', 'In Progress', 'Done']
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+
+                                  decoration: BoxDecoration(
+                                    color: value == "To Do" ? Colors.orange : value == "In Progress" ? Colors.blue : Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8), // Add spacing between the circle and text
+
+                                Text(
+                                  value, // Display task's status text
+                                  style: TextStyle(
+                                    color: value == "To Do" ? Colors.orange : value == "In Progress" ? Colors.blue : Colors.green,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: isEditing ? (String? newStatus) {
+                          if (newStatus != null) {
+                            setState(() {
+                              selectedStatus = newStatus;
+                            });
+                          }
+                        } : null, // Disable the dropdown if not editing
+                        decoration: const InputDecoration(labelText: 'Status'),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                if (isEditing) {
+                                  // Save updates
+                                  Task updatedTask = Task(
+                                    title: titleController.text,
+                                    description: descriptionController.text,
+                                    deadline: DateTime.tryParse(deadlineController.text) ?? DateTime.now(),
+                                    status: selectedStatus, // Use selected status
+                                  );
+                                  if(updatedTask.title.isNotEmpty) {
+                                    updateTask(task.uid, updatedTask);
+
+                                    Navigator.of(context).pop();
+
+                                    showConfirmationMessage(
+                                        context, "Task updated successfully!");
+                                  } else {
+                                    Navigator.of(context).pop();
+
+                                    showConfirmationMessage(
+                                        context, "Couldn't update task!", isError: true);
+                                  }
+                                } else {
+                                  isEditing = true; // Switch to edit mode
+                                }
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Icon(isEditing ? Icons.update : Icons.edit),
+                                Text(isEditing ? 'Update' : 'Edit'),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              removeTaskById(task.uid);
+                              Navigator.of(context).pop();
+
+                              showConfirmationMessage(context, "Task removed successfully!");
+                            },
+                            child: const Row(
+                              children: [
+                                Icon(Icons.delete),
+                                Text('Remove'),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
@@ -203,15 +294,98 @@ class ListOfTasks extends StatelessWidget {
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         Task task = tasks[index];
-        return ListTile(
-          title: Text(task.title),
-          subtitle: Text(task.description),
-          onTap: () {
-            _showTaskDetailsDialog(context, task);
-          },
+
+        Color statusColor;
+
+        switch (task.status) {
+          case 'To Do':
+            statusColor = Colors.orange;
+            break;
+
+          case 'In Progress':
+            statusColor = Colors.blue;
+            break;
+
+          case 'Done':
+            statusColor = Colors.green;
+            break;
+
+          default:
+            statusColor = Colors.grey;
+        }
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16), // Spacing around each task
+          padding: const EdgeInsets.all(16), // Padding inside the task container
+
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEF8FF), // Set background color of each task
+            borderRadius: BorderRadius.circular(16), // Rounded corners for the task
+          ),
+
+          child: ListTile(
+            title: Text(
+              task.title,
+              style: const TextStyle(color: Color(0xFF0F0F0F), fontSize: 24),
+            ),
+
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(
+                  task.description,
+                  style: const TextStyle(color: Color(0xFF0F0F0F), fontSize: 16),
+                ),
+                const SizedBox(height: 8), // Add spacing between description and status
+
+                Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+
+                    const SizedBox(width: 8), // Add spacing between the circle and text
+
+                    Text(
+                      task.status, // Display task's status text
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            onTap: () {
+              _showTaskDetailsDialog(context, task);
+            },
+          ),
         );
       },
     );
+  }
+}
+
+
+Color _getStatusColor(String status) {
+  switch (status) {
+    case 'To Do':
+      return Colors.orange;
+    case 'In Progress':
+      return Colors.blue;
+    case 'Done':
+      return Colors.green;
+    default:
+      return Colors.grey;
   }
 }
 
@@ -324,50 +498,6 @@ class AddTaskButton extends StatelessWidget {
     String description = '';
     DateTime deadline = DateTime.now();
 
-    // showModalBottomSheet(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return Padding(
-    //       padding: const EdgeInsets.all(16),
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         children: [
-    //           TextField(
-    //             decoration: const InputDecoration(labelText: 'Title'),
-    //             onChanged: (value) {
-    //               title = value;
-    //             },
-    //           ),
-    //           TextField(
-    //             decoration: const InputDecoration(labelText: 'Description'),
-    //             onChanged: (value) {
-    //               description = value;
-    //             },
-    //           ),
-    //           TextField(
-    //             decoration: const InputDecoration(labelText: 'Deadline (YYYY-MM-DD)'),
-    //             onChanged: (value) {
-    //               deadline = DateTime.tryParse(value) ?? DateTime.now();
-    //             },
-    //           ),
-    //           TextButton(
-    //             onPressed: () {
-    //               Task newTask = Task(
-    //                 title: title,
-    //                 description: description,
-    //                 deadline: deadline,
-    //               );
-    //               Navigator.of(context).pop(); // Close modal
-    //               addTask(newTask); // Use the passed addTask function
-    //             },
-    //             child: const Text('Add'),
-    //           ),
-    //         ],
-    //       ),
-    //     );
-    //   },
-    // );
-
     showDialog(
       context: context,
       builder: (context) {
@@ -406,7 +536,17 @@ class AddTaskButton extends StatelessWidget {
                         deadline: deadline,
                       );
                       Navigator.of(context).pop(); // Close dialog
-                      addTask(newTask); // Use the passed addTask function
+
+                      if(newTask.title != "" ) {
+                        addTask(newTask);
+
+                        showConfirmationMessage(
+                            context, "Task added successfully!");
+                      }
+                      else {
+                        showConfirmationMessage(
+                            context, "Couldn't add task!", isError: true);
+                      }
                     },
                     child: const Text('Add'),
                   ),
@@ -418,4 +558,14 @@ class AddTaskButton extends StatelessWidget {
       },
     );
   }
+}
+
+void showConfirmationMessage(BuildContext context, String message, {bool isError = false}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 2),
+    ),
+  );
 }
