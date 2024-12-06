@@ -195,7 +195,7 @@ class ListOfTasks extends StatelessWidget {
                                   height: 10,
 
                                   decoration: BoxDecoration(
-                                    color: value == "To Do" ? Colors.orange : value == "In Progress" ? Colors.blue : Colors.green,
+                                    color: _getStatusColor(value),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -205,7 +205,7 @@ class ListOfTasks extends StatelessWidget {
                                 Text(
                                   value, // Display task's status text
                                   style: TextStyle(
-                                    color: value == "To Do" ? Colors.orange : value == "In Progress" ? Colors.blue : Colors.green,
+                                    color: _getStatusColor(value),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -220,7 +220,7 @@ class ListOfTasks extends StatelessWidget {
                             });
                           }
                         } : null, // Disable the dropdown if not editing
-                        decoration: const InputDecoration(labelText: 'Status'),
+                        decoration: const InputDecoration(labelText: 'Status', border: InputBorder.none),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
