@@ -263,17 +263,62 @@ class ListOfTasks extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              removeTaskById(task.uid);
-                              Navigator.of(context).pop();
+                              // Confirm removal
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext dialogContext) {
+                                  return AlertDialog(
+                                    title: const Text("Confirm Removal"),
+                                    content: const Text("Are you sure you want to remove this task?"),
 
-                              showConfirmationMessage(context, "Task removed successfully!");
-                            },
+                                      actions: <Widget>[
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                                          children: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(dialogContext).pop();
+                                              },
+                                              child: const Row(
+                                                  children: [
+                                                    Icon(Icons.cancel),
+                                                    Text("Cancel")
+                                                  ]
+                                              )
+                                            ),
+
+                                            const SizedBox(width: 8),
+
+                                            TextButton(
+                                              onPressed: () {
+                                                removeTaskById(task.uid);
+                                                showConfirmationMessage(context, "Task successfully removed!");
+
+                                                Navigator.of(dialogContext).pop();
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.check),
+                                                  Text("Remove")
+                                                ]
+                                              )
+                                            )
+                                        ]
+                                      )
+                                    ]
+                                  );
+                                },
+                                barrierDismissible: false,
+                              );  // showDialog
+                            },  // onPressed
                             child: const Row(
                               children: [
                                 Icon(Icons.delete),
-                                Text('Remove'),
-                              ],
-                            ),
+                                Text("Remove")
+                              ]
+                            )
                           ),
                         ],
                       ),
@@ -417,7 +462,7 @@ class FilterButtons extends StatelessWidget {
 
 // Parent class for filter buttons
 class FilterButton extends StatefulWidget {
-  final buttonType;
+  final String buttonType;
 
   const FilterButton({super.key, required this.buttonType});
 
