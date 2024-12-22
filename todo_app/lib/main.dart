@@ -11,6 +11,6 @@ void main() async {
   final dir = await getApplicationDocumentsDirectory();  // Get the app's document directory
   final isar = await Isar.open([TaskSchema], directory: dir.path);  // Open the Isar database
 
-  runApp(MainPage(isar: isar));  // Pass the Isar instance to your widget
+  runApp(HomeScreen(isar: isar));  // Pass the Isar instance to your widget
   // runApp(const MainPage());
 }

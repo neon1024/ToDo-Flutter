@@ -4,16 +4,17 @@ import 'package:isar/isar.dart';
 import '../models/task.dart';
 import '../widgets/buttons.dart';
 
-class MainPage extends StatefulWidget {
+
+class HomeScreen extends StatefulWidget {
   final Isar isar;
 
-  const MainPage({super.key, required this.isar});
+  const HomeScreen({super.key, required this.isar});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _HomeScreenState extends State<HomeScreen> {
   final List<Task> tasks = [];
 
   void addTask(Task task) {
@@ -46,7 +47,7 @@ class _MainPageState extends State<MainPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
 
                 children: [
-                  const MainTop(),
+                  const Header(),
                   const FilterButtons(),
 
                   Expanded(
@@ -77,14 +78,14 @@ class _MainPageState extends State<MainPage> {
 }
 
 // Welcome message and avatar
-class MainTop extends StatefulWidget {
-  const MainTop({super.key});
+class Header extends StatefulWidget {
+  const Header({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MainTopState();
+  State<StatefulWidget> createState() => _HeaderState();
 }
 
-class _MainTopState extends State<MainTop> {
+class _HeaderState extends State<Header> {
   // TODO: change on login
   var username = "Ioan";
 
@@ -422,6 +423,7 @@ class ListOfTasks extends StatelessWidget {
     );
   }
 
+  // TODO refactor the status methods? including the usage of status instead of DropDownMenu
   String _getStringFromStatus(Status status) {
     switch(status) {
       case Status.toDo:
