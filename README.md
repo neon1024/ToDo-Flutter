@@ -9,4 +9,4 @@
   - flutter pub add -d isar_generator build_runner
 
 ## Isar code generator
-  flutter pub run build_runner build
+  - flutter pub run build_runner build
