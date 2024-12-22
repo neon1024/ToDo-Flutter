@@ -1,36 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
 
 import '../models/task.dart';
 import '../widgets/buttons.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+
+class HomeScreen extends StatefulWidget {
+  final Isar isar;
+
+  const HomeScreen({super.key, required this.isar});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MainPageState extends State<MainPage> {
-  final List<Task> tasks = [];
+class _HomeScreenState extends State<HomeScreen> {
+  late List<Task> tasks = [];
 
-  void addTask(Task task) {
+  @override
+  void initState() {
+    super.initState();
+
+    _loadTasks();  // Load tasks from the database when the screen first loads
+  }
+
+  Future<void> _loadTasks() async {
+    final fetchedTasks = await widget.isar.tasks.where().findAll(); // Fetch all tasks from Isar
+
+    // calls build() to re-build the widget with the updated data (doesn't call initState)
     setState(() {
-      tasks.add(task);
+      tasks = fetchedTasks;  // Update state with fetched tasks
     });
   }
 
-  void removeTaskById(String idToRemove) {
-    setState(() {
-      tasks.removeWhere((task) { return task.uid == idToRemove;});
+  Future<void> addTask(Task task) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.put(task); // Add task to Isar
     });
+
+    // tasks.add(task);
+
+    // load the updated data
+    _loadTasks();
   }
 
-  void updateTask(String updateId, Task newTask) {
-    setState(() {
-      int index = tasks.indexWhere((task) { return task.uid == updateId; });
-      tasks[index] = newTask;
+  // void addTask(Task task) {
+  //   setState(() {
+  //     tasks.add(task);
+  //   });
+  // }
+
+  Future<void> removeTaskById(Id idToRemove) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.delete(idToRemove); // Remove task from Isar
     });
+
+    // setState(() {
+    //   tasks.removeWhere((task) => task.id == idToRemove);
+    // });
+
+    // load the updated data
+    _loadTasks();
   }
+
+  // void removeTaskById(Id idToRemove) {
+  //   setState(() {
+  //     tasks.removeWhere((task) { return task.id == idToRemove;});
+  //   });
+  // }
+
+  Future<void> updateTask(Id updateId, Task newTask) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.put(newTask); // Update task in Isar
+    });
+
+    // setState(() {
+    //   int index = tasks.indexWhere((task) => task.id == updateId);
+    //   tasks[index] = newTask;
+    // });
+
+    // load the updated data
+    _loadTasks();
+  }
+
+  // void updateTask(Id updateId, Task newTask) {
+  //   setState(() {
+  //     int index = tasks.indexWhere((task) { return task.id == updateId; });
+  //     tasks[index] = newTask;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +101,7 @@ class _MainPageState extends State<MainPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
 
                 children: [
-                  const MainTop(),
+                  const Header(),
                   const FilterButtons(),
 
                   Expanded(
@@ -74,14 +132,14 @@ class _MainPageState extends State<MainPage> {
 }
 
 // Welcome message and avatar
-class MainTop extends StatefulWidget {
-  const MainTop({super.key});
+class Header extends StatefulWidget {
+  const Header({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MainTopState();
+  State<StatefulWidget> createState() => _HeaderState();
 }
 
-class _MainTopState extends State<MainTop> {
+class _HeaderState extends State<Header> {
   // TODO: change on login
   var username = "Ioan";
 
@@ -134,8 +192,8 @@ class _MainTopState extends State<MainTop> {
 
 class ListOfTasks extends StatelessWidget {
   final List<Task> tasks;
-  final Function(String) removeTaskById;
-  final Function(String, Task) updateTask;
+  final Function(Id) removeTaskById;
+  final Function(Id, Task) updateTask;
 
   const ListOfTasks({
     super.key,
@@ -149,7 +207,7 @@ class ListOfTasks extends StatelessWidget {
     TextEditingController titleController = TextEditingController(text: task.title);
     TextEditingController descriptionController = TextEditingController(text: task.description);
     TextEditingController deadlineController = TextEditingController(text: task.deadline.toString().split(' ')[0]);
-    String selectedStatus = task.status; // Track selected status
+    Status selectedStatus = task.status; // Track selected status
 
     bool isEditing = false;
 
@@ -183,7 +241,7 @@ class ListOfTasks extends StatelessWidget {
                       ),
                       // Use DropdownButtonFormField instead of DropdownButton
                       DropdownButtonFormField<String>(
-                        value: selectedStatus,
+                        value: _getStringFromStatus(selectedStatus),
                         items: <String>['To Do', 'In Progress', 'Done']
                             .map((String value) {
                           return DropdownMenuItem<String>(
@@ -195,7 +253,7 @@ class ListOfTasks extends StatelessWidget {
                                   height: 10,
 
                                   decoration: BoxDecoration(
-                                    color: _getStatusColor(value),
+                                    color: _getStatusColor(_getStatusFromString(value)),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -205,7 +263,7 @@ class ListOfTasks extends StatelessWidget {
                                 Text(
                                   value, // Display task's status text
                                   style: TextStyle(
-                                    color: _getStatusColor(value),
+                                    color: _getStatusColor(_getStatusFromString(value)),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -216,7 +274,7 @@ class ListOfTasks extends StatelessWidget {
                         onChanged: isEditing ? (String? newStatus) {
                           if (newStatus != null) {
                             setState(() {
-                              selectedStatus = newStatus;
+                              selectedStatus = _getStatusFromString(newStatus);
                             });
                           }
                         } : null, // Disable the dropdown if not editing
@@ -237,7 +295,7 @@ class ListOfTasks extends StatelessWidget {
                                     status: selectedStatus, // Use selected status
                                   );
                                   if(updatedTask.title.isNotEmpty) {
-                                    updateTask(task.uid, updatedTask);
+                                    updateTask(task.id, updatedTask);
 
                                     Navigator.of(context).pop();
 
@@ -292,7 +350,7 @@ class ListOfTasks extends StatelessWidget {
 
                                                 TextButton(
                                                     onPressed: () {
-                                                      removeTaskById(task.uid);
+                                                      removeTaskById(task.id);
                                                       showConfirmationMessage(context, "Task successfully removed!");
 
                                                       Navigator.of(dialogContext).pop();
@@ -343,15 +401,15 @@ class ListOfTasks extends StatelessWidget {
         Color statusColor;
 
         switch (task.status) {
-          case 'To Do':
+          case Status.toDo:
             statusColor = Colors.orange;
             break;
 
-          case 'In Progress':
+          case Status.inProgress:
             statusColor = Colors.blue;
             break;
 
-          case 'Done':
+          case Status.done:
             statusColor = Colors.green;
             break;
 
@@ -399,7 +457,7 @@ class ListOfTasks extends StatelessWidget {
                     const SizedBox(width: 8), // Add spacing between the circle and text
 
                     Text(
-                      task.status, // Display task's status text
+                      _getStringFromStatus(task.status),  // Display task's status text
                       style: TextStyle(
                         color: statusColor,
                         fontSize: 16,
@@ -419,16 +477,52 @@ class ListOfTasks extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
+  // TODO refactor the status methods? including the usage of status instead of DropDownMenu
+  String _getStringFromStatus(Status status) {
+    switch(status) {
+      case Status.toDo:
+        return "To Do";
+
+      case Status.inProgress:
+        return "In Progress";
+
+      case Status.done:
+        return "Done";
+
+      default:
+        return "";
+    }
+  }
+
+  Color _getStatusColor(Status status) {
     switch (status) {
-      case 'To Do':
+      case Status.toDo:
         return Colors.orange;
-      case 'In Progress':
+
+      case Status.inProgress:
         return Colors.blue;
-      case 'Done':
+
+      case Status.done:
         return Colors.green;
+
       default:
         return Colors.grey;
+    }
+  }
+
+  Status _getStatusFromString(String status) {
+    switch(status) {
+      case "To Do":
+        return Status.toDo;
+
+      case "In Progress":
+        return Status.inProgress;
+
+      case "Done":
+        return Status.done;
+
+      default:
+        return Status.toDo;
     }
   }
 }
