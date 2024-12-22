@@ -15,26 +15,80 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Task> tasks = [];
+  late List<Task> tasks = [];
 
-  void addTask(Task task) {
+  @override
+  void initState() {
+    super.initState();
+
+    _loadTasks();  // Load tasks from the database when the screen first loads
+  }
+
+  Future<void> _loadTasks() async {
+    final fetchedTasks = await widget.isar.tasks.where().findAll(); // Fetch all tasks from Isar
+
+    // calls build() to re-build the widget with the updated data (doesn't call initState)
     setState(() {
-      tasks.add(task);
+      tasks = fetchedTasks;  // Update state with fetched tasks
     });
   }
 
-  void removeTaskById(Id idToRemove) {
-    setState(() {
-      tasks.removeWhere((task) { return task.id == idToRemove;});
+  Future<void> addTask(Task task) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.put(task); // Add task to Isar
     });
+
+    // tasks.add(task);
+
+    // load the updated data
+    _loadTasks();
   }
 
-  void updateTask(Id updateId, Task newTask) {
-    setState(() {
-      int index = tasks.indexWhere((task) { return task.id == updateId; });
-      tasks[index] = newTask;
+  // void addTask(Task task) {
+  //   setState(() {
+  //     tasks.add(task);
+  //   });
+  // }
+
+  Future<void> removeTaskById(Id idToRemove) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.delete(idToRemove); // Remove task from Isar
     });
+
+    // setState(() {
+    //   tasks.removeWhere((task) => task.id == idToRemove);
+    // });
+
+    // load the updated data
+    _loadTasks();
   }
+
+  // void removeTaskById(Id idToRemove) {
+  //   setState(() {
+  //     tasks.removeWhere((task) { return task.id == idToRemove;});
+  //   });
+  // }
+
+  Future<void> updateTask(Id updateId, Task newTask) async {
+    await widget.isar.writeTxn(() async {
+      await widget.isar.tasks.put(newTask); // Update task in Isar
+    });
+
+    // setState(() {
+    //   int index = tasks.indexWhere((task) => task.id == updateId);
+    //   tasks[index] = newTask;
+    // });
+
+    // load the updated data
+    _loadTasks();
+  }
+
+  // void updateTask(Id updateId, Task newTask) {
+  //   setState(() {
+  //     int index = tasks.indexWhere((task) { return task.id == updateId; });
+  //     tasks[index] = newTask;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
