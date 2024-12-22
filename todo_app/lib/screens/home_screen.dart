@@ -5,7 +5,9 @@ import '../models/task.dart';
 import '../widgets/buttons.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final Isar isar;
+
+  const MainPage({super.key, required this.isar});
 
   @override
   State<MainPage> createState() => _MainPageState();
