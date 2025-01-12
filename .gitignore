@@ -39,3 +39,4 @@ macos/.symlinks/
 todo_app/.dart_tool/package_config_subset
 todo_app/.dart_tool/package_config.json
 todo_app/.idea/workspace.xml
+todo_app/.idea/libraries/Dart_Packages.xml
