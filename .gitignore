@@ -36,3 +36,5 @@ macos/.symlinks/
 *.ipr
 *.iws
 .idea/
+todo_app/.dart_tool/package_config_subset
+todo_app/.dart_tool/package_config.json
