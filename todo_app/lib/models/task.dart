@@ -5,7 +5,7 @@ part 'task.g.dart';
 
 @collection
 class Task {
-  Id id = Isar.autoIncrement;
+  Id id;
   String title;
   String description;
   DateTime? deadline;
@@ -14,6 +14,7 @@ class Task {
   Status status;
 
   Task({
+    this.id = Isar.autoIncrement,
     String title = "Task",
     this.description = "",
     DateTime? deadline,

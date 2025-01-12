@@ -289,6 +289,7 @@ class ListOfTasks extends StatelessWidget {
                                 if (isEditing) {
                                   // Save updates
                                   Task updatedTask = Task(
+                                    id: task.id,  // Ensure the original id is preserved
                                     title: titleController.text,
                                     description: descriptionController.text,
                                     deadline: DateTime.tryParse(deadlineController.text) ?? DateTime.now(),
