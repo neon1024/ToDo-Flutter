@@ -5,12 +5,12 @@ import 'package:todo_app/models/task.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();  // Ensures all bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
 
   // Open the Isar instance
-  final dir = await getApplicationDocumentsDirectory();  // Get the app's document directory
-  final isar = await Isar.open([TaskSchema], directory: dir.path);  // Open the Isar database
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = await Isar.open([TaskSchema], directory: dir.path);
 
-  runApp(HomeScreen(isar: isar));  // Pass the Isar instance to your widget
+  runApp(HomeScreen(isar: isar));
   // runApp(const MainPage());
 }
